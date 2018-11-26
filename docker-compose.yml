@@ -1,0 +1,41 @@
+version: '3.4'
+services:
+  nginx:
+    image: nginx:latest
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx:/etc/nginx
+      - ./www:/www
+      - ./logs/nginx:/var/log/nginx
+    networks:
+      - www
+
+  php-fpm:
+    build:
+      context: ./compose
+      dockerfile: php-fpm-dockerfile
+    restart: always
+    networks:
+      - www
+    volumes:
+      - ./fpm:/etc/php/7.0/fpm
+      - ./www:/www
+      - ./logs/php:/var/log/php
+
+  mysql:
+    image: mariadb
+    restart: always
+    environment:
+    - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-PUT_SOME_PASSWORD_HERE_OR_IN_ENVIRONMENT_VARIABLE}
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/dumps:/tmp/dumps
+      - ./logs/mysql:/var/log/mysql
+    networks:
+      - www
+
+networks:
+  www:
